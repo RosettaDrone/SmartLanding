@@ -6,7 +6,9 @@ This algorithm uses only relative positions and velocities obtained via computer
 We asume that absolute positions and velocities are unknown. Furthermore we don't want to depend on GPS and sensors, but only on vision.
 
 We implemented two chasing algorithms, where a drone with a camera tracks and chases another object like a fiducial marker placed on the ground for precision landing.
+
 The only input of the algoritm is the position of the landing target relative to the drone's camera, which is then used to compute the relative velocity (target - drone).
+
 The algorithm supports high "observation latency" (the position of the target is received with a delay)
 and supports high "action latency" (the response time of the drone to change its velocity).
 
@@ -28,4 +30,4 @@ We implemented two chasing algorithms:
 
 ## Comparison
 
-The "PID controlled chasing algorithm" offers a smoother motion, but uses "magic" parameters that have to be fine tuned via trial and error, while the "Linear chasing algorithm" offers a more transparent and exact apporach.
+The "PID controlled chasing algorithm" offers a smoother motion, but uses "magic" parameters that have to be fine tuned via trial and error, while the "Linear chasing algorithm" offers a more transparent and exact approach.
