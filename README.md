@@ -31,3 +31,12 @@ We implemented two chasing algorithms:
 ## Comparison
 
 The "PID controlled chasing algorithm" offers a smoother motion, but uses "magic" parameters that have to be fine tuned via trial and error, while the "Linear chasing algorithm" offers a more transparent and exact approach.
+
+## Simulator
+
+The code is provided as a library that can be included in [Vision Landing](https://github.com/kripper/vision-landing-2) or tested visually as a stand alone.
+
+On the image we see the target (in red) being chased by the drone (in blue) and the drone's velocity adjustments.
+
+![image](https://user-images.githubusercontent.com/1479804/228393293-d3638265-8aa2-4070-ba8f-86cea76d3262.png)
+
