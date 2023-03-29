@@ -19,7 +19,7 @@ We implemented two chasing algorithms:
 - We use linear regression to predict the current relative position and relative velocity of the target.
 - We adjust the drone's velocity so that:
 	1) the drone moves with the same velocity vector as the target (their relative velocity is zero)
-	2) but we also add a velocity vector to move the drone in the direction of the target
+	2) but we also add a velocity vector to move the drone in the direction of the predicted position of target
 - We wait until the drone's velocity change transient finishes (the drone finished accelerating) and then compute a new velocity adjustment. See detailed comments in the code (search for "WAIT_TRANSIENT:").
 
 ## PID controlled chasing algorithm
@@ -34,7 +34,8 @@ The "PID controlled chasing algorithm" offers a smoother motion, but uses "magic
 
 The code is provided as a library that can be included in [Vision Landing](https://github.com/kripper/vision-landing-2) or tested visually as a stand alone.
 
-On the image we see the target (in red) being chased by the drone (in blue) and the drone's velocity adjustments.
+On the image we see the target (in red) being chased by the drone (in blue) and the drone's velocity adjustment vectors.
+In this test we simulated an observation latency and action latency of 1 [s] both, ie. the drone's velocity is adjusted with a total delay of 2 [s].
 
 ![image](https://user-images.githubusercontent.com/1479804/228393293-d3638265-8aa2-4070-ba8f-86cea76d3262.png)
 
