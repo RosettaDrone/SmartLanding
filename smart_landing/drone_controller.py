@@ -119,7 +119,10 @@ class DroneController:
 				sim.newFrame(currentTime)
 
 				if sim.drawPredictions:
-					absTargetX = obsDroneX + curPos
+					if not sim.renderAbsolute:
+						sim.obsDroneX = np.array([0,0])
+
+					absTargetX = sim.obsDroneX + curPos
 
 					# Estimated current target position
 					sim.renderMarker(absTargetX, "+", "green")
@@ -134,7 +137,10 @@ class DroneController:
 
 				absObsTargetX = sim.obsDroneX + obsTargetX # Absoulte observed target position
 				sim.renderTarget(absObsTargetX)
-				sim.renderDrone(sim.obsDroneX)
+
+				if sim.renderAbsolute:
+					sim.renderDrone(sim.obsDroneX)
+
 				sim.pushFrame()
 
 		else:
@@ -241,7 +247,8 @@ class Simulator:
 
 	def newFrame(self, t):
 		self.line = self.ax.plot([0,0], [0,0]) # HACK: Dummy to get an artistic object. See: https://github.com/matplotlib/matplotlib/issues/18381
-		self.render(self.ax.text(5, 5, "t=" + str(t), fontsize=12))
+		if not self.overlay:
+			self.render(self.ax.text(5, 5, "t=" + str(t), fontsize=12))
 	
 	def renderMarker(self, x, marker, color):
 		self.render(self.ax.scatter([x[0]], [x[1]], marker=marker, color=color))

@@ -32,11 +32,10 @@ def motionTest():
 	actionDelay = 1 # Time required to reach a desired velocity
 
 	slowMotion = False # Show in slow motion. TODO: Add buttons to move forward, backward.
-	renderAbsolute = True # Render absolute positions/velocities instead of relative positions/velocities
 
 	sim = Simulator(cameraDelay, slowMotion)
-
-	sim.drawPredictions = not renderAbsolute # Predictions are rendered wrong in absolute frame
+	sim.renderAbsolute = True # Render absolute positions/velocities instead of relative positions/velocities
+	sim.drawPredictions = not sim.renderAbsolute # Predictions are rendered wrong in absolute frame
 
 	sim.overlay = False # Show all frames at the same time instead of an animation
 
