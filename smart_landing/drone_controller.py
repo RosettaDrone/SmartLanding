@@ -2,27 +2,30 @@
 The DroneContrller class simulates the motion of the drone and does prediction.
 """
 
-from linear_reg import LinearReg
+#from linear_reg import LinearReg
 import numpy as np
 from collections import deque
 from simple_pid import PID
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import ArtistAnimation
+#from threading import Thread
 
 class DroneController:
 	def __init__(self, usePID, cameraDelay, actionDelay):
 		self.usePID = usePID
 		self.usePrediction = True
+		self.useLinearReg = False # TODO: Re-enable
 
 		self.x = np.array([0.0, 0.0])
 		self.droneVel = np.array([0.0, 0.0]) # Current drone velocity
 
 		self.lastX = None
 
-		size = 4 # Linear Regression observations. 4 is better then 3, because [0,0,1] generates too much error compared to [0,0,1,1]
-		self.regX = LinearReg(size) # LR for the x-coord
-		self.regY = LinearReg(size) # LR for the y-coord
+		if self.useLinearReg:
+			size = 4 # Linear Regression observations. 4 is better then 3, because [0,0,1] generates too much error compared to [0,0,1,1]
+			self.regX = LinearReg(size) # LR for the x-coord
+			self.regY = LinearReg(size) # LR for the y-coord
 
 		# Variables used for simulating gradual velocity change.
 		self.additionalVel = np.array([0.0, 0.0]) # Velocity to be added
@@ -57,12 +60,12 @@ class DroneController:
 			# NOTE: curPos and curVel are current *relative* position and velocities (target - camera)
 
 			if self.usePrediction:
-				if True:
-					# Use last observed velocity instead of using a linear regression, because it predicts with big error when we start moving.
-					# TODO: Use prediction, unless last observed velocities don't fit on a line
-					curVel = obsVel
-				else:
+				if self.useLinearReg:
 					curVel = self.getVel(currentTime) # current estimated velocity
+				else:
+					# Use last observed velocity instead of using a linear regression, because it predicts with big error when we start moving.
+					# TODO: Use linearReg, unless last observed velocities don't fit on a line
+					curVel = obsVel
 
 				curPos = obsTargetX + (obsVel + curVel) / 2 * dt # current estimated position = last-obs-position + avg velocity (between last observed velocity and current velocity) + avg velocity (between current velocity and future velocity)
 
@@ -92,7 +95,7 @@ class DroneController:
 				# We won't measure the drone's absolute velocity, but only the target relative velocity from the drone to the target.
 				# All we do is change the output velocities to minimize the error.
 				error = -desiredVel
-				deltaVel = np.array([pidX(error[0]), pidY(error[1])]) * 0.1 # TODO: 0.1 is a magical number (trial and error)
+				deltaVel = np.array([self.pidX(error[0]), self.pidY(error[1])]) * 0.1 # TODO: 0.1 is a magical number (trial and error)
 				self.addVel(deltaVel)
 
 			else:
@@ -118,10 +121,10 @@ class DroneController:
 				
 				sim.newFrame(currentTime)
 
-				if sim.drawPredictions:
-					if not sim.renderAbsolute:
-						sim.obsDroneX = np.array([0,0])
+				if not sim.renderAbsolute:
+					sim.obsDroneX = np.array([0,0])
 
+				if sim.drawPredictions:
 					absTargetX = sim.obsDroneX + curPos
 
 					# Estimated current target position
@@ -146,6 +149,7 @@ class DroneController:
 		else:
 			self.firstTime = False
 			deltaVel = np.array([0.0, 0.0])
+			self.waitTransient = obsT # Compute immediately. TODO: Autodetect when the drone velocity is constant.
 
 		return deltaVel
 
@@ -154,8 +158,9 @@ class DroneController:
 		if self.lastX is not None:
 			v = x - self.lastX
 
-			self.regX.add(t, v[0])
-			self.regY.add(t, v[1])
+			if self.useLinearReg:
+				self.regX.add(t, v[0])
+				self.regY.add(t, v[1])
 
 			#print("vel (t=" + str(t) + "): " + str(v))
 		else:
@@ -216,7 +221,7 @@ class Target:
 
 # Simple motion simulator to test the landing algorithm
 class Simulator:
-	def __init__(self, bufferSize, slowMotion):
+	def __init__(self, bufferSize = 1, slowMotion = False):
 		self.buffer = deque(maxlen=bufferSize) # Visual buffer, used to simulate the visual computing delay
 
 		self.overlay = False
@@ -232,6 +237,11 @@ class Simulator:
 			# Macro-analysis
 			self.interval = 100
 
+		self.obsDroneX = np.array([0,0])
+
+		self.line = []
+		self.showing = False
+
 	# Add a new observation to the visual buffer (to simulate the computer vision latency)
 	def pushVisualBuffer(self, target, drone):
 		self.buffer.append([
@@ -244,11 +254,29 @@ class Simulator:
 
 	def render(self, artObj):
 		self.line.append(artObj)
+	
+	def draw(self):
+		self.fig.canvas.draw()
+		self.fig.canvas.flush_events()
 
 	def newFrame(self, t):
-		self.line = self.ax.plot([0,0], [0,0]) # HACK: Dummy to get an artistic object. See: https://github.com/matplotlib/matplotlib/issues/18381
+		if self.interactive:
+			if not self.showing:
+				self.showing = True
+				plt.ion()
+				plt.show()
+
+			#thread = Thread(target=self.draw)
+			#thread.setDaemon(True)
+			#thread.start()
+			self.draw()
+
+			for line in self.line:
+				line.remove()
+
+		self.line = self.ax.plot([self.obsDroneX[0],self.obsDroneX[0]], [self.obsDroneX[0],self.obsDroneX[0]]) # HACK: Dummy to get an artistic object. See: https://github.com/matplotlib/matplotlib/issues/18381
 		if not self.overlay:
-			self.render(self.ax.text(5, 5, "t=" + str(t), fontsize=12))
+			self.render(self.ax.text(self.obsDroneX[0], self.obsDroneX[1], "t=" + str(t), fontsize=12))
 	
 	def renderMarker(self, x, marker, color):
 		self.render(self.ax.scatter([x[0]], [x[1]], marker=marker, color=color))
@@ -260,8 +288,10 @@ class Simulator:
 		self.renderMarker(x, "o", "red")
 
 	def renderArrow(self, x1, y1, x2, y2, color):
-		self.render(self.ax.arrow(x1, y1, x2, y2, head_width=0.2, head_length=0.3, alpha=0.5, color=color))
-
+		# TODO: Scale arrow head
+		#self.render(self.ax.arrow(x1, y1, x2, y2, head_width=0.2, head_length=0.3, alpha=0.5, color=color))
+		self.render(self.ax.arrow(x1, y1, x2, y2, alpha=0.5, color=color))
+	
 	def showAnimation(self):
 		plt.xlabel('x')
 		plt.ylabel('y')

@@ -36,7 +36,7 @@ def motionTest():
 	sim = Simulator(cameraDelay, slowMotion)
 	sim.renderAbsolute = True # Render absolute positions/velocities instead of relative positions/velocities
 	sim.drawPredictions = not sim.renderAbsolute # Predictions are rendered wrong in absolute frame
-
+	sim.interactive = False # Refreshes the plot immediately. Usefull for testing the while system when used as a library.
 	sim.overlay = False # Show all frames at the same time instead of an animation
 
 	target = Target()
