@@ -1,4 +1,6 @@
 """
+RossetaDrone's Raw Video Receiver
+
 Developed by opensource developers for opensource developers.
 If you are not going to contribute back, don't use this Software.
 We are not competing, but collaborating.
@@ -17,11 +19,8 @@ import time
 import sys
 
 def printNoLF(str):
-	if sys.version_info.major == 3:
-		print(str, end='')
-	else:
-		sys.stdout.write(str)
-		sys.stdout.flush()
+	sys.stdout.write(str)
+	sys.stdout.flush()
 
 class RosettaCamera():
 	def __init__(self):
