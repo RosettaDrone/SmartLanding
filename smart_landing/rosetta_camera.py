@@ -1,14 +1,27 @@
+"""
+Developed by opensource developers for opensource developers.
+If you are not going to contribute back, don't use this Software.
+We are not competing, but collaborating.
+The world is big and life is short.
+
+https://github.com/RosettaDrone/rosettadrone
+
+Author: Christopher Pereira (rosetta@imatronix.com)
+"""
+
 import socket
 import struct
 import numpy as np
 import cv2
 import time
+import sys
 
 def printNoLF(str):
-	# Python 2.7
-	#sys.stdout.write(str)
-	#sys.stdout.flush()
-	print(str, end='')
+	if sys.version_info.major == 3:
+		print(str, end='')
+	else:
+		sys.stdout.write(str)
+		sys.stdout.flush()
 
 class RosettaCamera():
 	def __init__(self):
@@ -101,4 +114,4 @@ class RosettaCamera():
 
 				rgb_mat = cv2.cvtColor(yuv_mat, cv2.COLOR_YUV2BGR_I420)
 
-				return rgb_mat
+				return rgb_mat, ts, yaw

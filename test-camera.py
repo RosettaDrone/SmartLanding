@@ -9,7 +9,8 @@ windowName = "Video Test"
 cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
 
 while True:
-	img = cam.getImage()
+	img,ts,yaw = cam.getImage()
+	print("ts: ", ts, ", yaw:", yaw)
 	cv2.imshow(windowName, img)
 
 	key = cv2.waitKey(1)
