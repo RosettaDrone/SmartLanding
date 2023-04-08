@@ -32,7 +32,7 @@ The "PID controlled chasing algorithm" offers a smoother motion, but uses "magic
 
 ## Simulator
 
-The code is provided as a library that can be included in [Vision Landing](https://github.com/kripper/vision-landing-2) or tested visually as a stand alone.
+The code is provided as a library that can be included in [Vision Landing](https://github.com/kripper/vision-landing-2) or run on a X11 display as a stand alone algorithm testing environment.
 
 On the image we see the target (in red) being chased by the drone (in blue) and the drone's velocity adjustment vectors.
 
