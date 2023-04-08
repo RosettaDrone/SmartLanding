@@ -30,8 +30,8 @@ class DroneController:
 		# Variables used for simulating gradual velocity change.
 		self.additionalVel = np.array([0.0, 0.0]) # Velocity to be added
 		self.setVelCount = 0 # We count cycles and make sure that self.additionalVel is completely added to self.droneVel
-		self.actionDelay = actionDelay # Cycles required to finish velocity change
-		self.totalDelay = cameraDelay + actionDelay
+		self.actionDelay = actionDelay
+		self.setCameraDelay(cameraDelay)
 
 		if usePID:
 			# TODO: Check other options, like: https://en.wikipedia.org/wiki/Smith_predictor
@@ -48,6 +48,10 @@ class DroneController:
 		self.waitTransient = 0
 
 		self.simulator = None # Only used for debugging in simulator
+
+	def setCameraDelay(self, delay):
+		self.cameraDelay = delay
+		self.totalDelay = self.cameraDelay + self.actionDelay # Cycles required to finish velocity change
 
 	def process(self, currentTime, obsT, obsTargetX):
 		obsVel = self.recPos(obsT, obsTargetX) # Observed relative velocity
